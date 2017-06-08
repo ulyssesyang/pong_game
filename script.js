@@ -96,8 +96,8 @@
         if (ballX > canvas.width) {
             if (ballY > padRightPos && ballY < padRightPos + padHeight) {
                 ballSpeedX = -ballSpeedX;
-
-                var deltaY = ballY - (padLeftPos + padHeight / 2);
+                // set penalty for hitting away from the middle of pad
+                var deltaY = ballY - (padRightPos + padHeight / 2);
                 ballSpeedY = deltaY * 0.35;
             } else {
                 player1Score++;
@@ -107,7 +107,7 @@
         } else if (ballX < 0) {
             if (ballY > padLeftPos && ballY < padLeftPos + padHeight) {
                 ballSpeedX = -ballSpeedX;
-
+                // set penalty for hitting away from the middle of pad
                 var deltaY = ballY - (padLeftPos + padHeight / 2);
                 ballSpeedY = deltaY * 0.35;
 
