@@ -21,6 +21,10 @@
     var player1Score = 0,
         player2Score = 0;
 
+    var winnerScore = 1;
+
+    var showWinnerScreen = false;
+
     window.onload = function () {
 
         canvas = document.getElementById('gameCanvas');
@@ -33,7 +37,15 @@
             var mousePos = calculateMousePos(evt);
             padLeftPos = mousePos.y - padHeight / 2;
             // padRightPos = mousePos.y - padHeight / 2;
-        })
+        });
+
+        canvas.addEventListener('mousedown', function (evt) {
+            if (showWinnerScreen) {
+                player1Score = 0;
+                player2Score = 0;
+                showWinnerScreen = false;
+            }
+        });
 
     }
 
@@ -48,13 +60,27 @@
     }
 
     function ballRest() {
-        ballX = canvas.width / 2;
-        ballY = canvas.height / 2;
-        ballSpeedX = -ballSpeedX;
+        if (player1Score >= winnerScore || player2Score >= winnerScore) {
+            showWinnerScreen = true;
+        } else {
+            ballX = canvas.width / 2;
+            ballY = canvas.height / 2;
+            ballSpeedX = -ballSpeedX;
+        }
     }
 
     function updateCanvas() {
         updateBackground();
+        if (showWinnerScreen) {
+            if (player1Score > player2Score) {
+                canvasContext.fillStyle = 'white';
+                canvasContext.fillText('Winner is Player1', 100, 100);
+            } else if (player1Score < player2Score) {
+                canvasContext.fillStyle = 'white';
+                canvasContext.fillText('Winner is Player2', 100, 100);
+            }
+            return;
+        }
         computerMove();
         updateLeftPad();
         updateRightPad();
@@ -84,6 +110,7 @@
     }
 
     function updateScore() {
+        canvasContext.fillStyle = 'white';
         canvasContext.fillText('Player1:', 100, 100);
         canvasContext.fillText(player1Score, 150, 100);
 
