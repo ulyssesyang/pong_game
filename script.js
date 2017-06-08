@@ -81,6 +81,7 @@
             }
             return;
         }
+        drawNet();
         computerMove();
         updateLeftPad();
         updateRightPad();
@@ -98,6 +99,12 @@
 
     function updateRightPad() {
         drawRect('white', canvas.width - padWidth, padRightPos, padWidth, padHeight)
+    }
+
+    function drawNet() {
+        for (var i = 0; i < canvas.height; i += 40) {
+            drawRect('white', canvas.width / 2 - 1, i, 2, 20);
+        }
     }
 
     function computerMove() {
