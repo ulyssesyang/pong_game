@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="style.css" rel="stylesheet">
+</head>
+
+<body>
+
+    <canvas id="gameCanvas" width="800" height="600" tabindex='1'></canvas>
+
+    <script>
+        (function() {
+
+            var canvas = document.getElementById('gameCanvas'),
+                canvasContext = canvas.getContext('2d');
+
+            // setup Ball constructor property
+            var Ball = function(x, y, r, color) {
+
+                this.x = x;
+                this.y = y;
+                this.r = r;
+                this.color = color;
+                this.SpeedX = 10;
+                this.SpeedY = 10;
+
+            }
+
+            // setup Ball constructor methods
+            Ball.prototype = {
+                draw: function() {
+                    canvasContext.fillStyle = this.color;
+                    canvasContext.beginPath();
+                    canvasContext.arc(this.x, this.y, this.r, 0, Math.PI * 2, true);
+                    canvasContext.fill();
+                },
+
+            }
+
+        })()
+    </script>
+</body>
+
+</html>

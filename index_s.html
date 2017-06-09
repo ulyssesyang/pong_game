@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="style.css" rel="stylesheet">
+</head>
+
+<body>
+
+    <canvas id="gameCanvas" width="800" height="600" tabindex='1'></canvas>
+
+    <script>
+        (function() {
+
+            var canvas = document.getElementById('gameCanvas'),
+                canvasContext = canvas.getContext('2d');
+
+            var ballX = 50,
+                ballY = 100,
+                ballRadius = 10,
+                ballSpeedX = 10,
+                ballSpeedY = 10;
+
+            var padWidth = 10,
+                padHeight = 100,
+                padLeftPos = 210,
+                padRightPos = 210,
+                padMoveFriction = 0.8,
+                padLeftSpeed = 10,
+                padRightSpeed = 10,
+                padLeftVel = 0,
+                padRightVel = 0;
+
+            var robotSpeed = 10;
+
+            var player1Score = 0,
+                player2Score = 0;
+
+            var winnerScore = 10;
+
+            var showWinnerScreen = false;
+
+            var upKey = 38,
+                downKey = 40,
+                wKey = 87,
+                sKey = 83,
+                keys = [];
+
+            window.onload = function() {
+
+                var fps = 60;
+                setInterval(updateCanvas, 1000 / fps);
+                // window.requestAnimationFrame(updateCanvas);
+
+                canvas.addEventListener('mousemove', function(evt) {
+                    var mousePos = calculateMousePos(evt);
+                    padLeftPos = mousePos.y - padHeight / 2;
+                    // padRightPos = mousePos.y - padHeight / 2;
+                });
+
+                canvas.addEventListener('mousedown', function(evt) {
+                    if (showWinnerScreen) {
+                        player1Score = 0;
+                        player2Score = 0;
+                        showWinnerScreen = false;
+                    }
+                });
+
+                window.addEventListener('keydown', onkeydown, false);
+
+            }
+
+            function onkeydown(e) {
+                var code = e.keyCode;
+                switch (code) {
+                    case 38:
+                        if (padRightVel > -padRightSpeed) {
+                            padRightVel--;
+                        }
+                        break; //Up key
+                    case 40:
+                        if (padRightVel < padRightSpeed) {
+                            padRightVel++;
+                        }
+                        break; //Down key
+                    case 87:
+                        // if (padLeftVel > -padLeftSpeed) {     padLeftVel--; }
+                        padLeftVel = padLeftVel - padLeftSpeed;
+                        break; //W key
+                    case 83:
+                        // if (padLeftVel < padLeftSpeed) {     padLeftVel++; }
+                        padLeftVel = padLeftVel + padLeftSpeed;
+                        break; //S key
+                }
+
+                padLeftVel *= padMoveFriction;
+                padLeftPos += padLeftVel;
+                padRightVel *= padMoveFriction;
+                padRightPos += padRightVel;
+
+                if (padLeftPos >= canvas.height) {
+                    padLeftPos = canvas.height;
+                } else if (padLeftPos <= 0) {
+                    padLeftPos = 0;
+                }
+
+                if (padRightPos > canvas.height) {
+                    padRightPos = canvas.height;
+                } else if (padRightPos <= 0) {
+                    padRightPos = 0;
+                }
+            }
+
+            function calculateMousePos(evt) {
+                var rect = canvas.getBoundingClientRect();
+                var root = document.documentElement;
+                var mouseX = evt.clientX - rect.left - root.scrollLeft;
+                var mouseY = evt.clientY - rect.top - root.scrollTop;
+
+                return {
+                    x: mouseX,
+                    y: mouseY
+                };
+
+            }
+
+            function ballRet() {
+                if (player1Score >= winnerScore || player2Score >= winnerScore) {
+                    showWinnerScreen = true;
+                } else {
+                    ballX = canvas.width / 2;
+                    ballY = canvas.height / 2;
+                    ballSpeedX = -ballSpeedX;
+                }
+            }
+
+            function updateCanvas() {
+                updateBackground();
+                if (showWinnerScreen) {
+                    if (player1Score > player2Score) {
+                        canvasContext.fillStyle = 'white';
+                        canvasContext.fillText('Winner is Player1', 100, 100);
+                    } else if (player1Score < player2Score) {
+                        canvasContext.fillStyle = 'white';
+                        canvasContext.fillText('Winner is Player2', 100, 100);
+                    }
+                    return;
+                }
+                drawNet();
+                setRobot();
+                drawLeftPad();
+                drawRightPad();
+                drawBall();
+                updateScore();
+
+                // window.requestAnimationFrame(updateCanvas);
+            }
+
+            function updateBackground() {
+                createRect('black', 0, 0, canvas.width, canvas.height);
+            }
+
+            function drawLeftPad() {
+                createRect('white', 0, padLeftPos, padWidth, padHeight);
+            }
+
+            function drawRightPad() {
+                createRect('white', canvas.width - padWidth, padRightPos, padWidth, padHeight)
+            }
+
+            function drawNet() {
+                for (var i = 0; i < canvas.height; i += 40) {
+                    createRect('white', canvas.width / 2 - 1, i, 2, 20);
+                }
+            }
+
+            function setRobot() {
+                var padRightPosCenter = padRightPos + padHeight / 2;
+                if (padRightPosCenter < ballY - 35) {
+                    padRightPos = padRightPos + robotSpeed;
+                } else if (padRightPosCenter > ballY + 35) {
+                    padRightPos = padRightPos - robotSpeed;
+                }
+            }
+
+            function updateScore() {
+                canvasContext.fillStyle = 'white';
+                canvasContext.fillText('Player1:', 100, 100);
+                canvasContext.fillText(player1Score, 150, 100);
+
+                canvasContext.fillText('Player2:', canvas.width - 150, 100);
+                canvasContext.fillText(player2Score, canvas.width - 100, 100);
+            }
+
+            function drawBall() {
+                ballX = ballX + ballSpeedX;
+                if (ballX > canvas.width) {
+                    if (ballY > padRightPos && ballY < padRightPos + padHeight) {
+                        ballSpeedX = -ballSpeedX;
+                        // set penalty for hitting away from the middle of pad
+                        var deltaY = ballY - (padRightPos + padHeight / 2);
+                        ballSpeedY = deltaY * 0.35;
+                    } else {
+                        player1Score++;
+                        ballRet();
+                    }
+
+                } else if (ballX < 0) {
+                    if (ballY > padLeftPos && ballY < padLeftPos + padHeight) {
+                        ballSpeedX = -ballSpeedX;
+                        // set penalty for hitting away from the middle of pad
+                        var deltaY = ballY - (padLeftPos + padHeight / 2);
+                        ballSpeedY = deltaY * 0.35;
+
+                    } else {
+                        player2Score++;
+                        ballRet();
+                    }
+                }
+
+                ballY = ballY + ballSpeedY;
+                if (ballY > canvas.height) {
+                    ballSpeedY = -ballSpeedY;
+                } else if (ballY < 0) {
+                    ballSpeedY = -ballSpeedY;
+                }
+                createBall('red', ballX, ballY, ballRadius);
+            }
+
+            function createRect(color, x, y, width, height) {
+                canvasContext.fillStyle = color;
+                canvasContext.fillRect(x, y, width, height);
+            }
+
+            function createBall(color, x, y, radius) {
+                canvasContext.fillStyle = color;
+                canvasContext.beginPath();
+                canvasContext.arc(x, y, radius, 0, Math.PI * 2, true);
+                canvasContext.fill();
+            }
+
+        })()
+    </script>
+</body>
+
+</html>
